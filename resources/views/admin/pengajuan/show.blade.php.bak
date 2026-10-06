@@ -1,0 +1,53 @@
+@extends('layouts.admin')
+@section('title', 'Detail Pengajuan')
+@section('page_heading', 'Periksa Pengajuan')
+@section('content')
+<a class="btn btn-outline-secondary mb-3" href="{{ route('admin.berkas.index') }}">Kembali</a>
+@if($errors->any())<div class="alert alert-danger">{{ $errors->first() }}</div>@endif
+@if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
+<div class="card"><div class="card-body"><h2 class="h5">{{ $pengajuan->nomor_pengajuan }} — {{ $pengajuan->nama_mahasiswa }}</h2>
+<dl class="row">
+@foreach(['nim'=>'NIM','email'=>'Email','prodi'=>'Program studi','jenis_layanan'=>'Layanan','keperluan'=>'Keperluan','tujuan_surat'=>'Kepada','dosen_pembimbing'=>'Dosen pembimbing','mata_kuliah'=>'Mata kuliah','judul_skripsi'=>'Judul skripsi','tempat_penelitian'=>'Tempat penelitian','status'=>'Status'] as $key=>$label)
+@if($pengajuan->{$key})<dt class="col-sm-3">{{ $label }}</dt><dd class="col-sm-9">{{ $pengajuan->{$key} }}</dd>@endif
+@endforeach
+</dl><h3 class="h6">Periksa dan validasi berkas mahasiswa</h3>
+@foreach(['file_ukt'=>['Bukti bayar UKT','validasi_ukt'], 'file_sk_ortu'=>['SK terakhir orang tua','validasi_sk_ortu']] as $key=>$detail)
+@if($key === 'file_ukt' || $pengajuan->jenis_layanan === 'aktif_kuliah_tunjangan_ortu')
+<div class="border rounded p-3 mb-3">
+  <strong>{{ $detail[0] }}</strong> —
+  @if($pengajuan->{$key})
+    <a href="{{ route('admin.berkas.file', [$pengajuan, $key]) }}" target="_blank" rel="noopener">Buka berkas</a>
+    <span class="badge badge-{{ $pengajuan->{$detail[1]} === 'valid' ? 'success' : ($pengajuan->{$detail[1]} === 'perlu_perbaikan' ? 'danger' : 'secondary') }} ml-2">{{ $pengajuan->{$detail[1]} === 'valid' ? 'Valid' : ($pengajuan->{$detail[1]} === 'perlu_perbaikan' ? 'Perlu perbaikan' : 'Belum diperiksa') }}</span>
+    <form method="POST" action="{{ route('admin.berkas.validasi', [$pengajuan, $key]) }}" class="mt-2">@csrf
+      <button name="keputusan" value="valid" class="btn btn-success btn-sm">Tandai valid</button>
+      <button name="keputusan" value="perlu_perbaikan" class="btn btn-warning btn-sm">Perlu perbaikan</button>
+    </form>
+  @else
+    <span class="text-danger">Belum diunggah; tidak dapat divalidasi.</span>
+  @endif
+</div>
+@endif
+@endforeach
+@if($pengajuan->file_pendukung)<a class="btn btn-outline-primary btn-sm mb-2" href="{{ route('admin.berkas.file', [$pengajuan, 'file_pendukung']) }}" target="_blank" rel="noopener">Berkas pendukung</a>@endif
+</div></div>
+@php
+  $berkasValid = $pengajuan->file_ukt && $pengajuan->validasi_ukt === 'valid'
+    && ($pengajuan->jenis_layanan !== 'aktif_kuliah_tunjangan_ortu' || ($pengajuan->file_sk_ortu && $pengajuan->validasi_sk_ortu === 'valid'));
+@endphp
+@unless($berkasValid)<div class="alert alert-warning">Validasi seluruh berkas wajib sebelum mengekspor atau mengunggah surat yang disahkan.</div>@endunless
+<div class="card"><div class="card-body"><h3 class="h5">Pratinjau surat</h3><p>Pratinjau ini adalah draf dari data pengajuan. Periksa dan lengkapi surat resmi sebelum disahkan.</p>
+@include('admin.pengajuan.surat')
+@if($berkasValid)
+<a class="btn btn-primary mt-3" href="{{ route('admin.berkas.docx', $pengajuan) }}">Ekspor DOCX</a>
+<a class="btn btn-outline-primary mt-3" href="{{ route('admin.berkas.pdf', $pengajuan) }}">Ekspor PDF</a>
+@endif
+</div></div>
+<div class="card"><div class="card-body"><h3 class="h5">Surat yang sudah distempel dan ditandatangani</h3>
+@if($pengajuan->surat_disahkan)<a href="{{ route('admin.berkas.file', [$pengajuan, 'surat_disahkan']) }}" target="_blank" rel="noopener">Lihat surat disahkan</a>@endif
+@if($berkasValid)<form method="POST" action="{{ route('admin.berkas.upload', $pengajuan) }}" enctype="multipart/form-data">@csrf
+<label for="surat_disahkan">Unggah PDF surat yang sudah disahkan (maksimal 10 MB)</label>
+<input type="file" id="surat_disahkan" name="surat_disahkan" accept=".pdf" class="form-control mb-2" required><button class="btn btn-success">Unggah surat</button></form>
+@endif
+</div></div>
+<form method="POST" action="{{ route('admin.berkas.destroy', $pengajuan) }}" onsubmit="return confirm('Hapus pengajuan ini beserta berkasnya?')">@csrf @method('DELETE')<button class="btn btn-danger">Hapus pengajuan ini</button></form>
+@endsection

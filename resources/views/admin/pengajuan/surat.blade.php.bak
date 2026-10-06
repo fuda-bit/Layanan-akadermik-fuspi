@@ -1,0 +1,96 @@
+<style>
+  @page {
+    margin: 20mm 20mm;
+  }
+</style>
+<div style="font-family:DejaVu Sans,sans-serif;font-size:10pt;line-height:1.5;color:#111;background:#fff;width:100%;box-sizing:border-box;margin:auto">
+  <p style="margin:0 0 16px"><img alt="Kop FUSPI" src="data:image/jpeg;base64,{{ $kop }}" style="display:block;width:100%;height:auto"></p>
+  @php
+  $jenis = $pengajuan->jenis_layanan;
+  $aktif = str_starts_with($jenis,'aktif_kuliah_');
+  $labels = ['magang'=>'Permohonan Magang','observasi'=>'Permohonan Observasi','penelitian'=>'Izin Penelitian','rekomendasi'=>'Rekomendasi'];
+  @endphp
+  @if($aktif)
+  <p style="text-align:center"><strong><u>SURAT KETERANGAN MASIH AKTIF KULIAH</u></strong><br>NOMOR: {{ $surat['nomor_surat'] }}</p>
+  <p>Yang bertanda tangan di bawah ini:</p>
+  <table>
+    <tr>
+      <td>Nama</td>
+      <td>: MASRUKHIN MUHSIN</td>
+    </tr>
+    <tr>
+      <td>NIP</td>
+      <td>: 197202021999031004</td>
+    </tr>
+    <tr>
+      <td>Jabatan</td>
+      <td>: Wakil Dekan I</td>
+    </tr>
+  </table>
+  <p>Dengan ini menerangkan bahwa mahasiswa berikut:</p>
+  @else
+  <table>
+    <tr>
+      <td>Nomor</td>
+      <td>: {{ $surat['nomor_surat'] }}</td>
+    </tr>
+    <tr>
+      <td>Lampiran</td>
+      <td>: -</td>
+    </tr>
+    <tr>
+      <td>Perihal</td>
+      <td>: {{ $labels[$jenis] ?? '' }}</td>
+    </tr>
+  </table>
+  <p style="margin:24px 0">Kepada Yth.<br>{{ $surat['tujuan_surat'] }}<br>di Tempat</p>
+  <p>Assalamu’alaikum Wr. Wb.</p>
+  @if($jenis === 'magang')<p>Dalam rangka memenuhi kewajiban kurikulum dan meningkatkan keterampilan mahasiswa Program Studi {{ $surat['prodi'] }} Fakultas Ushuluddin dan Pemikiran Islam, kami memohon izin agar mahasiswa berikut dapat melaksanakan magang di instansi yang Bapak/Ibu pimpin.</p>
+  @elseif($jenis === 'observasi')<p>Dalam rangka memenuhi tugas observasi mata kuliah {{ $surat['mata_kuliah'] }} Program Studi {{ $surat['prodi'] }} Fakultas Ushuluddin dan Pemikiran Islam, kami memohon izin agar mahasiswa berikut dapat melaksanakan observasi di tempat Bapak/Ibu.</p>
+  @elseif($jenis === 'penelitian')<p>Dekan Fakultas Ushuluddin dan Pemikiran Islam Universitas Islam Negeri Sultan Maulana Hasanuddin Banten memohon kepada Bapak/Ibu agar mahasiswa berikut dapat melakukan penelitian:</p>
+  @else<p>Saya yang bertanda tangan di bawah ini, Masykur selaku Dekan Fakultas Ushuluddin dan Pemikiran Islam, memberikan rekomendasi kepada:</p>@endif
+  @endif
+  <table style="width:100%;border-collapse:collapse">
+    @foreach(['Nama'=>'nama_mahasiswa','Tempat/Tgl. Lahir'=>'tempat_tgl_lahir','NIM'=>'nim','Fakultas'=>null,'Prodi/Semester'=>null] as $label=>$key)
+    <tr>
+      <td style="width:34%;vertical-align:top">{{ $label }}</td>
+      <td>: {{ $key ? $surat[$key] : ($label === 'Fakultas' ? 'Ushuluddin dan Pemikiran Islam' : $surat['prodi'].' / '.$surat['semester']) }}</td>
+    </tr>
+    @endforeach
+    @if($jenis === 'aktif_kuliah_tunjangan_ortu')
+    @foreach(['Nama Orang Tua'=>'nama_orang_tua','NIP Orang Tua'=>'nip_orang_tua','Pangkat/Gol Orang Tua'=>'pangkat_orang_tua','Instansi Orang Tua'=>'instansi_orang_tua'] as $label=>$key)<tr>
+      <td>{{ $label }}</td>
+      <td>: {{ $surat[$key] }}</td>
+    </tr>@endforeach
+    @endif
+    @if($jenis === 'penelitian')<tr>
+      <td>Judul Skripsi</td>
+      <td>: {{ $surat['judul_skripsi'] }}</td>
+    </tr>
+    <tr>
+      <td>Tempat Penelitian</td>
+      <td>: {{ $surat['tempat_penelitian'] }}</td>
+    </tr>@endif
+  </table>
+  @if($aktif)
+  <p>adalah mahasiswa Fakultas Ushuluddin dan Pemikiran Islam Universitas Islam Negeri Sultan Maulana Hasanuddin Banten yang masih aktif kuliah pada semester {{ $surat['semester_akademik'] }} tahun akademik {{ $surat['tahun_akademik'] }}.</p>
+  <p>Surat keterangan ini dibuat untuk keperluan {{ $surat['keperluan'] }}.</p>
+  <p>Demikian surat keterangan ini dibuat dengan sebenarnya untuk dipergunakan sebagaimana mestinya.</p>
+  @else
+  @if(in_array($jenis,['magang','observasi'],true))<p>Dosen Pembimbing: {{ $surat['dosen_pembimbing'] }}</p>@endif
+  @if($jenis === 'magang')
+  @if($surat['tanggal_mulai'] && $surat['tanggal_selesai'])<p>Kegiatan magang dilaksanakan pada {{ $surat['tanggal_mulai'] }} sampai dengan {{ $surat['tanggal_selesai'] }}.</p>
+  @else<p><em>Periode magang belum diisi admin.</em></p>@endif
+  @if($surat['keperluan'])<p>Keperluan: {{ rtrim($surat['keperluan'], '.') }}.</p>@endif
+  @endif
+  @if($jenis === 'observasi')<p>Keperluan observasi: {{ $surat['keperluan'] }}.</p>@endif
+  @if($jenis === 'penelitian')<p>Pelaksanaan penelitian disesuaikan dengan jadwal yang ditentukan oleh Bapak/Ibu.</p>@endif
+  @if($jenis === 'rekomendasi')<p>Untuk keperluan {{ $surat['keperluan'] }}.</p>@endif
+  <p>Demikian surat ini kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.</p>
+  <p>Wassalamu’alaikum Wr. Wb.</p>
+  @endif
+  <div style="margin-left:55%;margin-top:24px">Serang, {{ $surat['tanggal_surat'] }}<br>
+    @if(in_array($jenis,['magang','rekomendasi'],true))Dekan Fakultas Ushuluddin dan Pemikiran Islam,<br><br><br><br><strong>MASYKUR</strong>
+    @else a.n. Dekan<br>Wakil Dekan Bidang Akademik dan Kelembagaan,<br><br><br><br><strong>MASRUKHIN MUHSIN</strong>@endif
+  </div>
+</div>

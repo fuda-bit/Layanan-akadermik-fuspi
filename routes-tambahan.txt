@@ -1,0 +1,5 @@
+// Rute publik pemohon; tambahkan di routes/web.php di luar grup middleware admin.
+Route::get('/pemohon', [\App\Http\Controllers\PemohonController::class, 'index'])->name('pemohon.index');
+Route::post('/pemohon/cek', [\App\Http\Controllers\PemohonController::class, 'lookup'])->middleware('throttle:10,1')->name('pemohon.lookup');
+Route::get('/pemohon/status', [\App\Http\Controllers\PemohonController::class, 'status'])->name('pemohon.status');
+Route::get('/pemohon/unduh', [\App\Http\Controllers\PemohonController::class, 'download'])->middleware('throttle:20,1')->name('pemohon.download');

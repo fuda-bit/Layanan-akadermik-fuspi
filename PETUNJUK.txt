@@ -1,0 +1,9 @@
+PENYESUAIAN LEBAR KOP FUSPI
+
+Paket ini mengganti enam template DOCX dan resources/views/admin/pengajuan/surat.blade.php (pratinjau serta PDF). Kop baru yang sebelumnya diunggah tetap dipakai. Gambar dibuat lebih lebar dan diposisikan supaya garis kop sejajar dengan batas isi surat. Ruang dari garis kop ke Nomor/Judul surat diperkecil. Template DOCX telah dirender satu halaman per jenis layanan.
+
+Dari PowerShell pada folder C:\laragon\www\e-surat-fuspi-laravel10:
+Expand-Archive "$env:USERPROFILE\Downloads\kop-fuspi-lebar.zip" -DestinationPath . -Force
+php artisan view:clear
+
+Buka ulang detail pengajuan dengan Ctrl+F5. Ekspor ulang DOCX dan PDF. Untuk pratinjau/PDF, file kop.jpeg dari paket kop-resmi-fuspi-baru.zip sebelumnya harus sudah terpasang pada storage/app/templates/surat/kop.jpeg. File PDF yang telah diunduh dan surat final yang pernah diunggah tidak berubah otomatis.
